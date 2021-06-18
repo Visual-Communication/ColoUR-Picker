@@ -1,0 +1,669 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Color Picker</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/solid.css" integrity="sha384-fZFUEa75TqnWs6kJuLABg1hDDArGv1sOKyoqc7RubztZ1lvSU7BS+rc5mwf1Is5a" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/fontawesome.css" integrity="sha384-syoT0d9IcMjfxtHzbJUlNIuL19vD9XQAdOzftC+llPALVSZdxUpVXE0niLOiw/mn" crossorigin="anonymous">
+  <style>
+    html, body {
+      background: #464646;
+      color: #ccc;
+      font-family: sans-serif;
+      font-size: 2vmin;
+    }
+
+    #mode-picker {
+      position: absolute;
+      left: 55%;
+      top: 6%;
+      width: 40%;
+      height: 2vh;
+      text-align: left;
+      line-height: 1.5vh;
+      vertical-align: middle;
+    }
+
+    #color-picker-label-bg, #color-picker-label-fg {
+    	z-index: 10;
+        pointer-events: none;
+    	position: absolute;
+    	left: 2%;
+    	top: 3%;
+    	margin-top: 1.66%;
+    	height: 2%;
+    	width: 50%;
+    	text-align: center;
+    	font-weight: bold;
+    	font-size: 2.5vmin;
+    	color: #fff;
+    	text-shadow: 0px 0px 2px rgba(0, 0, 0, 1);
+    }
+
+    #color-picker-label-fg {
+      margin-top: -1.25%;
+    }
+
+    #color-picker {
+      position: absolute;
+      left: 2%;
+      top: 5%;
+      width: 50%;
+      height: 95%;
+    }
+
+    #color-picker svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #color-picker svg path.sector {
+      stroke-width: 6%;
+      cursor: pointer;
+      transition: all 0.1s ease-in;
+    }
+
+    #color-picker svg path.sector:hover {
+      stroke-width: 7%;
+    }
+
+    #color-picker svg path.sector.current {
+      stroke-width: 8%;
+    }
+
+    #color-picker svg path.sector.fg {
+      stroke-width: 25%;
+      cursor: pointer;
+      transition: all 0.1s ease-in;
+    }
+
+    #color-picker svg path.sector.fg:hover {
+      stroke-width: 27%;
+    }
+
+    #color-picker svg path.sector.fg.current {
+      stroke-width: 29%;
+    }
+
+    #example {
+      position: absolute;
+      box-sizing: border-box;
+      left: 55%;
+      top: 10%;
+      width: 40%;
+      line-height: 7vin;
+      font-size: 7vmin;
+    }
+
+    #example #text {
+      padding: 1vh 3vw;
+      text-align: center;
+    }
+
+    #example #envelopes {
+      margin-top: 1vmin;
+      font-size: 3vw;
+      padding: 0vh 0.5vw;
+    }
+
+    #example #envelopes i {
+      padding: 3vh 1vw;
+      margin: 0vh -0.5vw;
+    }
+
+    #scrollbars {
+      position: absolute;
+      left: 55%;
+      top: 60%;
+      width: 40%;
+      height: 25%;
+      font-weight: bold;
+    }
+
+    #contrastScrollbar, #friendlinessScrollbar {
+      position: relative;
+      height: 3vh;
+      background: #666;
+    }
+
+    #friendlinessScrollbar {
+      background: #666;
+    }
+
+    #contrastScrollbar div, #friendlinessScrollbar div {
+      position: absolute;
+      width: 5%;
+      height: 100%;
+      background: #ccc;
+      left: 50%;
+    }
+
+    #contrastPercent, #friendlinessPercent, #envelopesLabel {
+      overflow: hidden;
+      margin-bottom: 2vh;
+    }
+
+    #envelopesLabel, #contrastPercent, #friendlinessPercent {
+    	display: flex;
+    	width: 100%;
+    }
+
+    .zero, .fifty, .hundred {
+    	flex: 1;
+    }
+
+    .zero {
+    	text-align: left;
+    }
+
+    .fifty {
+    	text-align: center;
+    }
+
+    .hundred {
+    	text-align: right;
+    }
+
+    #envelopesLabel, #envelopesLabel2 {
+    	margin-top: 0.5vmin;
+    	font-size: 2vmin;
+    	font-weight: bold;
+    }
+
+    #envelopesLabel2 {
+		margin-top: 5vmin;
+    }
+
+    #hint {
+    	margin-top: 5vmin;
+    }
+  </style>
+  <style id="styletag"></style>
+</head>
+<body>
+  <div id="mode-picker">
+    <label for="mode-picker-lockbg"><input id="mode-picker-lockbg" name="mode-picker-radio" type="radio"/>Background</label>
+    <label for="mode-picker-lockfg"><input id="mode-picker-lockfg" name="mode-picker-radio" type="radio"/>Foreground</label>
+  </div>
+  <div id="color-picker-label-bg">Primary color</div>
+  <div id="color-picker-label-fg">Secondary color</div>
+  <div id="color-picker">
+  </div>
+  <div id="example">
+    <div id="envelopesLabel2">
+      Ranking from user response
+    </div>
+    <div id="envelopes">
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+      <i class="fas fa-envelope"></i>
+    </div>
+    <div id="envelopesLabel">
+      <div class="zero">Low</div>
+      <div class="fifty">Friendly and visible</div>
+      <div class="hundred">High</div>
+    </div>
+    <div id="text">This is your text</div>
+  </div>
+  <div id="scrollbars">
+    <div id="contrastLabel">Contrast calculation</div>
+    <div id="contrastScrollbar">
+      <div></div>
+      <div></div>
+    </div>
+    <div id="contrastPercent">
+      <div class="zero">0%</div>
+      <div class="hundred">100%</div>
+    </div>
+
+    <div id="friendlinessLabel">Friendly and visible from user response</div>
+    <div id="friendlinessScrollbar">
+      <div></div>
+    </div>
+    <div id="friendlinessPercent">
+      <div class="zero">0%</div>
+      <div class="hundred">100%</div>
+    </div>
+	<div id="hint">
+		The contrast was calculated according to recommendations of the WCAG standard.
+		Friendliness and visibility of color sets have been experimentally tested on a group of users.
+	</div>
+  </div>
+  <script>
+    Set.prototype.nth = function(n) {
+      return Array.from(this.values())[n];
+    };
+    Set.prototype.toggle = function(value) {
+      if (this.has(value)) {
+        if (this.size > 1) this.delete(value);
+      } else {
+        this.add(value);
+      }
+    };
+
+    const bgColors = colorsArray(getBgColors());
+    const fgColors = colorsArray(getFgColors());
+
+    let picker = {
+      bgIndex: new Set([8]),
+      fgIndex: new Set([0]),
+      lock: 'bg'
+    };
+
+    document.getElementById('mode-picker-lockbg').checked = true;
+
+    selectFriendliestFg();
+
+    updatePicker();
+
+    window.addEventListener('resize', () => drawColorCircles());
+
+    document.getElementById('mode-picker-lockbg').addEventListener('change', e => {
+      picker.lock = 'bg';
+
+      const tmp = picker.bgIndex.nth(0);
+      picker.bgIndex.clear();
+      picker.bgIndex.add(tmp);
+
+      updatePicker();
+    });
+
+    document.getElementById('mode-picker-lockfg').addEventListener('change', e => {
+      picker.lock = 'fg';
+
+      // const tmp = picker.fgIndex.nth(0);
+      // picker.fgIndex.clear();
+      // picker.fgIndex.add(tmp);
+
+      updatePicker();
+    });
+
+    document.getElementById('color-picker').addEventListener('click', e => {
+      if (e.target.classList.contains('bg')) bgClick(e.target, e.target.dataset.i);
+      else if (e.target.classList.contains('fg')) fgClick(e.target, e.target.dataset.i);
+    });
+
+
+
+    function updatePicker() {
+      if (picker.lock == 'bg') {
+        picker.fgIndex.delete(picker.bgIndex.nth(0));
+        if (picker.fgIndex.size == 0) picker.fgIndex.add((picker.bgIndex.nth(0) + 1) % bgColors.length);
+      } else if (picker.lock == 'fg') {
+        picker.bgIndex.delete(picker.fgIndex.nth(0));
+        if (picker.bgIndex.size == 0) picker.bgIndex.add((picker.fgIndex.nth(0) + 1) % fgColors.length);
+      }
+
+      updateExample();
+
+      let contrastThumbs = '';
+      let friendlinessThumbs = '';
+      for (let i = 0; i < Math.max(picker.bgIndex.size, picker.fgIndex.size); i++) {
+        const colorIdx = picker.fgIndex.nth(i);
+        contrastThumbs += `<div style="left: ${getNormalizedContrast(i)}%; background: ${bgColors[colorIdx]}"></div>`;
+        friendlinessThumbs += `<div style="left: ${getNormalizedFriendliness(i)}%; background: ${bgColors[colorIdx]}"></div>`;
+      }
+      document.getElementById('contrastScrollbar').innerHTML = contrastThumbs;
+      document.getElementById('friendlinessScrollbar').innerHTML = friendlinessThumbs;
+
+      drawColorCircles();
+    }
+
+    function updateExample() {
+      // text
+      const text = document.getElementById('text');
+      text.style = `${picker.lock === 'bg' ? 'background': 'color'}: ${bgColors[picker.bgIndex.nth(0)]}; ${picker.lock === 'bg' ? 'color': 'background'}: ${fgColors[picker.fgIndex.nth(0)]}`;
+      const envelopes = document.getElementById('envelopes');
+      envelopes.style = `background: ${bgColors[picker.bgIndex.nth(0)]}; color: ${fgColors[picker.fgIndex.nth(0)]}`;
+
+      // envelopes
+      const colors = bgColors;
+      const lockedIdx = picker.bgIndex.nth(0);
+      const colorFriendliness = new Map();
+      for (let i = 0; i < colors.length; i++) {
+        if (i != lockedIdx) {
+          colorFriendliness.set(colors[i], getNormalizedFriendliness(i, lockedIdx, i));
+        }
+      }
+      const tmp = [...colorFriendliness.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .map(a => a[0]);
+      for (let i = 0; i < tmp.length; i++) {
+        const env = document.querySelector(`#envelopes i:nth-child(${i + 1})`);
+        if (picker.lock == 'bg') {
+          env.style.color = tmp[tmp.length - i - 1];
+          env.style.background = bgColors[picker.bgIndex.nth(0)];
+        } else if (picker.lock == 'fg') {
+          // env.style.color = fgColors[picker.fgIndex.nth(0)];
+          env.style.color = bgColors[picker.bgIndex.nth(0)];
+          env.style.background = tmp[tmp.length - i - 1];
+        }
+      }
+
+      if (picker.lock == 'fg') {
+        envelopes.style = `background: ${tmp[0]}`;
+      }
+    }
+
+    function drawColorCircles() {
+      const el = document.getElementById('color-picker');
+
+      // remove old SVG element
+      [].forEach.call(document.querySelectorAll('svg'), svg => svg.remove());
+
+      document.getElementById('styletag').innerHTML = '';
+      const paths = drawColorCircle(el, bgColors, 'bg', 0.85, picker.bgIndex, true) +
+              drawColorCircle(el, fgColors, 'fg', 0.32, picker.fgIndex, false);
+
+      el.innerHTML = `<svg id="circles">${paths}</svg>`;
+
+      const svg = document.getElementById('circles');
+      svg.addEventListener('mouseover', e => {
+        if (e.target.tagName.toLowerCase() == 'path') {
+          svg.classList.add(`over-${e.target.classList.contains('bg') ? 'bg' : 'fg'}`);
+        }
+      });
+      svg.addEventListener('mouseout', e => {
+        if (e.target.tagName.toLowerCase() == 'path') {
+          svg.classList.remove('over-bg');
+          svg.classList.remove('over-fg');
+        }
+      });
+
+      let bbox = document.querySelector('path.sector.bg[data-i="0"]').getBBox();
+      document.getElementById('color-picker-label-bg').style.top = `${bbox.y}px`;
+      bbox = document.querySelector('path.sector.fg[data-i="0"]').getBBox();
+      document.getElementById('color-picker-label-fg').style.top = `${bbox.y}px`;
+    }
+
+    function drawColorCircle(el, colors, cssClass, radiusFactor, current, locked) {
+      const elWidth = el.offsetWidth;
+      const elHeight = el.offsetHeight;
+      const radius = Math.min(elWidth / 2, elHeight / 2) * radiusFactor;
+
+      let html = '';
+      let css = '';
+      const step = 360 / colors.length;
+      for (const [i, color] of colors.entries()) {
+        const arcSegment = describeArc(elWidth / 2, elHeight / 2, radius, i * step, (i + 1) * step);
+        // html += `<path data-i="${i}" class="${cssClass} sector ${i == current ? 'current' : ''}" fill="none" style="stroke: ${color}" d="${arcSegment}"/>`;
+        html += `<path data-i="${i}" class="${cssClass} sector ${current.has(i) ? 'current' : ''}" fill="none" d="${arcSegment}"/>`;
+        if (locked) {
+          css += `.${cssClass}.sector[data-i="${i}"] { stroke: ${color}; opacity: ${current.has(i) ? '1.0' : '0.2'} }\n`;
+          // css += `svg.over-${cssClass} .${cssClass}.sector[data-i="${i}"] { stroke: ${color}; opacity: 1.0 }\n`;
+        } else {
+          css += `.${cssClass}.sector[data-i="${i}"] { stroke: ${color} }\n`;
+        }
+      }
+      document.getElementById('styletag').innerHTML += css;
+      return html;
+    }
+
+    function bgClick(path, segment) {
+      // if (picker.lock == 'bg') {
+        picker.bgIndex.clear();
+        picker.bgIndex.add(1 * segment);
+      // } else {
+      //   if (picker.fgIndex.nth(0) != 1 * segment) {
+      //     picker.bgIndex.toggle(1 * segment);
+      //     if (picker.bgIndex.size > 3) picker.bgIndex.toggle(1 * segment);
+      //   }
+      // }
+
+      selectFriendliestFg();
+
+      document.querySelector('path.sector.bg.current').classList.remove('current');
+      path.classList.add('current');
+
+      updatePicker();
+    }
+
+    function fgClick(path, segment) {
+      // if (picker.lock == 'fg') {
+      //   picker.fgIndex.clear();
+      //   picker.fgIndex.add(1 * segment);
+      // } else {
+        if (picker.bgIndex.nth(0) != 1 * segment) {
+          picker.fgIndex.toggle(1 * segment);
+          // if (picker.fgIndex.size > 3) picker.fgIndex.toggle(1 * segment);
+        }
+      // }
+
+      document.querySelector('path.sector.fg.current').classList.remove('current');
+      path.classList.add('current');
+
+      updatePicker();
+    }
+
+    // polarToCartesian() and describeArc() code "stolen" from http://jsbin.com/quhujowota/1/edit?html,js,output
+    function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+      const angleInRadians = (angleInDegrees-90) * Math.PI / 180.0;
+      return {
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians))
+      };
+    }
+
+    function describeArc(x, y, radius, startAngle, endAngle){
+      const start = polarToCartesian(x, y, radius, endAngle);
+      const end = polarToCartesian(x, y, radius, startAngle);
+
+      const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+      return [
+        "M", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+      ].join(" ");
+    }
+
+    function colorsArray(colorsMap) {
+      return Array.from(colorsMap.values());
+    }
+
+    function bgColorName(colorIndex) {
+      return Array.from(getBgColors().keys())[colorIndex];
+    }
+
+    function fgColorName(colorIndex) {
+      return Array.from(getFgColors().keys())[colorIndex];
+    }
+
+    function getBgColors() {
+      return new Map([
+        ['red'     , '#ff0000'],
+        ['orange'  , '#ff7d00'],
+        ['yellow'  , '#ffff00'],
+        ['green'   , '#00ff00'],
+        ['blue'    , '#0000ff'],
+        ['violet'  , '#7d00ff'],
+        ['black'   , '#000000'],
+        ['white'   , '#ffffff'],
+        ['gray'    , '#919191']
+      ]);
+    }
+
+    function getFgColors() {
+      return getBgColors();
+    }
+
+    function selectFriendliestFg() {
+      picker.fgIndex.clear();
+      const colors = bgColors;
+      const lockedIdx = picker.bgIndex.nth(0);
+      const colorFriendliness = new Map();
+      for (let i = 0; i < colors.length; i++) {
+        if (i != lockedIdx) {
+          colorFriendliness.set(colors[i], getNormalizedFriendliness(i, lockedIdx, i));
+        }
+      }
+      const tmp = [...colorFriendliness.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .map(a => a[0]);
+      picker.fgIndex.add(colors.indexOf(tmp[0]));      
+    }
+
+    function getContrast(i) {
+      const bgIdx = picker.bgIndex.nth(0);
+      const fgIdx = picker.fgIndex.nth(i);
+      const prefix = `${bgColorName(bgIdx)},${fgColorName(fgIdx)},`;
+      const reversedPrefix = `${fgColorName(fgIdx)},${bgColorName(bgIdx)},`;
+      try {
+        // bg fg contrast
+        return 1.0 * `
+red,orange,1.60
+red,yellow,3.70
+red,green,2.90
+red,blue,2.10
+red,violet,1.60
+red,black,5.30
+red,white,4.00
+red,gray,1.40
+orange,black,8.20
+blue,orange,3.30
+orange,white,2.60
+orange,violet,2.50
+yellow,orange,2.40
+green,orange,1.90
+orange,gray,1.10
+yellow,black,19.60
+yellow,blue,8.00
+yellow,violet,5.90
+yellow,gray,2.60
+yellow,green,1.30
+yellow,white,1.10
+green,black,15.30
+green,violet,4.60
+green,gray,2.00
+green,white,1.40
+blue,green,6.30
+blue,white,8.60
+blue,gray,3.10
+blue,black,2.40
+blue,violet,1.40
+violet,white,6.30
+violet,black,3.30
+violet,gray,2.30
+black,white,21.00
+black,gray,7.60
+white,gray,2.80
+      `.trim()
+                .split('\n')
+                .find(line => line.startsWith(prefix) || line.startsWith(reversedPrefix))
+                .split(',')[2];
+      } catch (err) {
+        console.log(`Missing %ccontrast%c definition for: %c${bgColorName(picker.bgIndex.nth(i))}, ${fgColorName(picker.fgIndex.nth(i))}`, 'font-weight: bold', 'font-weight: normal', 'font-weight: bold');
+        return -1;
+      }
+    }
+
+    function getNormalizedContrast(i) {
+      const minContrast = 0.0;
+      const maxContrast = 21.0;
+      return 95.0 * (getContrast(i) - minContrast) / (maxContrast - minContrast);
+    }
+
+    function getFriendliness(i, bgIdx = false, fgIdx = false) {
+      if (bgIdx === false) bgIdx = picker.bgIndex.nth(0);
+      if (fgIdx === false) fgIdx = picker.fgIndex.nth(i);
+      const prefix = `${bgColorName(bgIdx)},${fgColorName(fgIdx)},`;
+      try {
+        // locked bg fg friendliness
+        return 1.0 * `
+black,gray,0.8591075
+black,orange,1.337836
+black,violet,1.5832525
+black,blue,1.708264
+black,red,1.9779405
+black,green,2.2162035
+black,yellow,2.37987
+black,white,2.4905475
+blue,violet,0.197929
+blue,gray,0.8412265
+blue,orange,1.442528
+blue,red,1.5822535
+blue,black,1.824834
+blue,green,2.1732005
+blue,yellow,2.503698
+blue,white,2.5797245
+gray,violet,0.701654
+gray,blue,1.2378285
+gray,orange,1.2947665
+gray,black,1.6579085
+gray,red,1.4901215
+gray,green,2.349829
+gray,white,2.49929
+gray,yellow,2.524738
+green,yellow,0.7623335
+green,orange,1.055874
+green,gray,1.589597
+green,red,2.119195
+green,white,2.1730185
+green,violet,2.105425
+green,black,2.46347
+green,blue,2.548981
+orange,red,0.686133
+orange,gray,1.1135065
+orange,violet,1.602399
+orange,green,1.777697
+orange,black,2.2276025
+orange,blue,2.1837315
+orange,yellow,2.1252735
+orange,white,2.496187
+red,orange,0.5905325
+red,gray,0.9051515
+red,violet,1.239346
+red,blue,1.6884445
+red,black,2.043815
+red,green,2.1016895
+red,yellow,2.404882
+red,white,2.606884
+violet,blue,0.2834455
+violet,gray,0.7764465
+violet,orange,1.385286
+violet,red,1.531411
+violet,black,1.991063
+violet,green,2.179092
+violet,yellow,2.443025
+violet,white,2.60226
+white,yellow,0.993825
+white,gray,1.402529
+white,orange,1.304019
+white,green,1.4928795
+white,violet,2.2360565
+white,red,2.3232445
+white,black,2.4427025
+white,blue,2.6123535
+yellow,green,0.7505665
+yellow,orange,1.05796
+yellow,white,1.0664985
+yellow,gray,1.6886775
+yellow,red,2.1853775
+yellow,violet,2.272872
+yellow,black,2.5130505
+yellow,blue,2.585896
+      `.trim()
+                .split('\n')
+                .find(line => line.startsWith(prefix))
+                .split(',')[2];
+      } catch (err) {
+        console.log(`Missing %cfriendliness%c definition for: %c${bgColorName(picker.bgIndex.nth(i))}, ${fgColorName(picker.fgIndex.nth(i))}`, 'font-weight: bold', 'font-weight: normal', 'font-weight: bold');
+        return -1;
+      }
+    }
+
+    function getNormalizedFriendliness(i, bgIdx = false, fgIdx = false) {
+      const minFriendliness = 0.220656810810811;
+      const maxFriendliness = 2.90814894594595;
+      return 95.0 * (getFriendliness(i, bgIdx, fgIdx) - minFriendliness) / (maxFriendliness - minFriendliness);
+    }
+  </script>
+</body>
+</html>
